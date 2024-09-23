@@ -111,7 +111,17 @@ func validateRequest(r *http.Request, router routers.Router, options *Options) (
 	}
 
 	contextKey := strconv.FormatInt(rand.Int63n(math.MaxInt64-1), 10)
+	// check if contextKey already exists
+	for {
+		_, ok := store[contextKey]
+		if !ok {
+			break
+		}
+		contextKey = strconv.FormatInt(rand.Int63n(math.MaxInt64-1), 10)
+	}
+	// add contextKey to request Context
 	requestContext := context.WithValue(r.Context(), ContextKey, contextKey)
+	// add contextData to ContextKey map
 	store[contextKey] = &contextData{
 		deadline: time.Now().Add(options.Deadline * time.Second).UTC(),
 		values:   make(map[string]interface{}),
